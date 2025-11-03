@@ -1,453 +1,249 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FROJAX FREE CLICK</title>
-<link rel="icon" href="favicon.ico">
 <style>
-:root{
-  --bg:#0b0b0c; --card:#141417; --gold:#d4af37; --muted:#8a8a8f; --text:#f5f5f7; --panel:#1a1a20; --active:#151515;
-}
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial;}
-.viewport{height:100dvh;width:100%;display:flex;align-items:center;justify-content:center;}
-.wrap{width:100%;max-width:860px;padding:10px}
-.card{background:var(--card);border:1px solid #202026;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.35);
-      display:flex;flex-direction:column;height:calc(100dvh - 20px);overflow:hidden;}
-/* header */
-.header{padding-top:8px}
-img.logo{display:block;margin:auto;max-height:96px;width:auto;object-fit:contain;filter:drop-shadow(0 0 5px #000);}
-h1{text-align:center;color:var(--gold);font-weight:900;letter-spacing:1px;font-size:clamp(20px,3vw,28px);margin-top:2px;}
+  body {
+    margin: 0;
+    background: #000;
+    color: #fff;
+    font-family: Arial, sans-serif;
+    text-align: center;
+  }
 
-/* main */
-.main{flex:1;overflow:hidden;padding:8px 10px;display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:flex-start;}
-.indicatorRow{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap}
-.pulse{width:clamp(90px,20vw,130px);height:clamp(90px,20vw,130px);border-radius:50%;border:4px solid var(--gold);
-       display:grid;place-items:center;position:relative;overflow:hidden;margin:4px 0;}
-.pulseCore{position:absolute;inset:8%;border-radius:50%;background:rgba(212,175,55,.08);}
-.pulse.glow{box-shadow:0 0 36px rgba(212,175,55,.75), 0 0 90px rgba(212,175,55,.35) inset;}
-.pulseRing{position:absolute;inset:0;border-radius:50%;border:0 solid var(--gold);opacity:0;}
-.ringAnim{animation:pulseGlow 650ms ease-out;}
-@keyframes pulseGlow{0%{transform:scale(.9);opacity:.65;border-width:10px}100%{transform:scale(1.35);opacity:0;border-width:0}}
-.screenFlash{position:fixed;inset:0;background:radial-gradient(50% 50% at 50% 50%, rgba(212,175,55,.4), rgba(212,175,55,0) 60%);opacity:0;pointer-events:none}
-.screenFlash.showAccent{animation:flashAccent 120ms ease-out}
-.screenFlash.show{animation:flash 100ms ease-out}
-@keyframes flash{0%{opacity:.18}100%{opacity:0}} @keyframes flashAccent{0%{opacity:.35}100%{opacity:0}}
+  .app {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: background 0.3s ease;
+  }
 
-.bpmBig{display:flex;align-items:baseline;justify-content:center;gap:10px;flex-wrap:wrap}
-.bpmValue{font-size:clamp(60px,10vw,110px);font-weight:900;line-height:.9;text-align:center;}
-.bpmUnit{font-size:clamp(14px,2vw,18px);font-weight:600;letter-spacing:.6px;}
-.tsInline{font-size:clamp(14px,2vw,18px);font-weight:700;letter-spacing:.6px;color:var(--gold)}
+  .app.trainer-on {
+    background: radial-gradient(circle at center, #222 0%, #000 100%);
+  }
 
-.controls{display:grid;gap:10px;grid-template-columns:1fr;align-items:center;justify-items:center;text-align:center}
-.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center}
-label{color:var(--muted);font-size:13px}
-input[type="range"]{width:min(500px,92%)}
-.select{background:#111;border:1px solid #2a2a33;color:#fff;padding:8px 10px;border-radius:10px;font-weight:700}
-.btn{padding:10px 14px;border-radius:10px;font-weight:800;cursor:pointer;border:1px solid #2a2a33;text-transform:uppercase;background:#1d1d22;color:#fff}
-.btn.primary{background:var(--gold);color:#141417;border-color:#000}
-.pill{padding:6px 10px;border-radius:999px;border:1px solid #2a2a33;color:#ddd;background:transparent;font-size:12px}
-.pillCircle{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-            border:1px solid #2a2a33;background:#1a1a20;color:#ddd;font-weight:800;cursor:pointer;transition:all .2s}
-.pillCircle.active{background:var(--gold);color:#000;border-color:#000}
-.accents{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:2px}
-.accentBtn{width:38px;height:38px;border-radius:10px;border:1px solid #2a2a33;background:#1a1a20;color:#ddd;font-weight:800;cursor:pointer}
-.accentBtn.on{background:var(--gold);color:#141417;border-color:#000}
-.accentLabel{text-align:center;margin-top:2px;color:var(--muted);font-size:12px}
+  .brand {
+    font-size: 22px;
+    font-weight: 900;
+    color: gold;
+    margin-bottom: 30px;
+    text-transform: uppercase;
+  }
 
-/* Trainer panel */
-.trainerAnchor{position:relative;height:0;display:flex;justify-content:center;align-items:center}
-.trainerPanel{position:absolute;top:6px;left:50%;transform:translateX(-50%);background:var(--panel);border:1px solid #2a2a33;border-radius:12px;padding:10px;width:min(560px,96%);
-              opacity:0;pointer-events:none;transition:opacity .18s ease, transform .18s ease;box-shadow:0 10px 30px rgba(0,0,0,.35);text-align:center}
-.trainerPanel.show{opacity:1;pointer-events:auto;transform:translate(-50%,0)}
-.kv{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;margin-top:4px}
-.kv input[type="number"]{width:90px;background:#111;border:1px solid #2a2a33;color:#fff;padding:7px 9px;border-radius:10px;font-weight:700;text-align:center}
+  .controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
 
-/* footer links */
-.linkbar{margin-top:auto;border-top:1px solid #222;padding:10px;display:flex;justify-content:center;gap:20px}
-.linkbar a{color:var(--gold);font-weight:800;text-decoration:none;font-size:clamp(13px,2vw,16px);transition:filter .2s}
-.linkbar a:hover{filter:brightness(1.2)}
+  .btn {
+    background: #222;
+    color: #fff;
+    border: 2px solid gold;
+    border-radius: 12px;
+    font-size: 18px;
+    padding: 12px 24px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn:hover {
+    background: gold;
+    color: black;
+  }
+
+  .trainer-panel {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .trainer-panel label {
+    font-size: 16px;
+  }
+
+  .trainer-panel input {
+    width: 80px;
+    text-align: center;
+    margin-left: 8px;
+  }
+
+  .trainer-panel[aria-disabled="true"] {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  .status {
+    margin-top: 20px;
+    font-size: 16px;
+    opacity: 0.8;
+  }
 </style>
 </head>
+
 <body>
-<div class="viewport">
-  <div class="wrap">
-    <div class="card">
-      <div class="header">
-        <img class="logo" src="assets/Frojax-Logo2024.png" alt="Frojax Logo">
-        <h1>FROJAX FREE CLICK</h1>
-      </div>
+  <div id="app" class="app">
+    <header class="brand">FROJAX FREE CLICK</header>
 
-      <div class="main">
-        <div class="screenFlash" id="screenFlash"></div>
+    <div class="controls">
+      <button id="trainerToggle" class="btn" aria-pressed="false" title="Toggle Trainer Mode">
+        🏋️ Trainer: OFF
+      </button>
 
-        <div class="indicatorRow">
-          <div class="pulse" id="pulse">
-            <div class="pulseCore"></div>
-            <div class="pulseRing" id="pulseRing"></div>
-          </div>
-          <div class="bpmBig">
-            <div id="bpmValue" class="bpmValue">120</div>
-            <div class="bpmUnit">BPM</div>
-            <div id="tsInline" class="tsInline">4/4</div>
-          </div>
-        </div>
-
-        <div class="controls">
-          <div class="row">
-            <label for="bpm">Tempo</label>
-            <input id="bpm" type="range" min="30" max="240" value="120" />
-            <label for="volume">Volumen</label>
-            <input id="volume" type="range" min="0" max="100" value="85" />
-            <label for="soundType">Sonido</label>
-            <select id="soundType" class="select" aria-label="Tipo de sonido">
-              <option value="click" selected>Click</option>
-              <option value="beep">Beep</option>
-              <option value="tick">Tick</option>
-              <option value="cowbell">Cowbell</option>
-            </select>
-          </div>
-
-          <!-- Shortcuts -->
-          <div class="row">
-            <div class="pillCircle" data-bpm="60">60</div>
-            <div class="pillCircle" data-bpm="80">80</div>
-            <div class="pillCircle" data-bpm="100">100</div>
-            <div class="pillCircle" data-bpm="125">125</div>
-            <div class="pillCircle" data-bpm="150">150</div>
-            <div class="pillCircle" data-bpm="175">175</div>
-            <div class="pillCircle" data-bpm="200">200</div>
-          </div>
-
-          <!-- Start + Trainer -->
-          <div class="row">
-            <button id="startStop" class="btn primary">Iniciar</button>
-            <button id="trainerToggle" class="btn">MODO ENTRENAMIENTO: OFF</button>
-          </div>
-
-          <!-- Trainer panel -->
-          <div class="trainerAnchor">
-            <div id="trainerPanel" class="trainerPanel">
-              <div class="muted" style="margin-bottom:6px;">
-                Práctica guiada que empieza en una velocidad y termina en otra, para una práctica más enfocada en acondicionamiento y metas.
-              </div>
-              <div class="kv">
-                <label for="startBpm">Inicio</label>
-                <input id="startBpm" type="number" min="30" max="240" value="80" />
-                <label for="endBpm">Final</label>
-                <input id="endBpm" type="number" min="30" max="240" value="140" />
-                <label for="durationMin">Duración (min)</label>
-                <input id="durationMin" type="number" min="1" max="60" value="2" />
-              </div>
-            </div>
-          </div>
-
-          <!-- Time signature controls -->
-          <div class="row" style="flex-direction:column;margin-top:6px;">
-            <div class="accentLabel">Beats/Compás (Numerador)</div>
-            <div class="row">
-              <button id="beatsMinus" class="pill" aria-label="Disminuir beats">−</button>
-              <span id="beatsCount" class="pill">4</span>
-              <button id="beatsPlus" class="pill" aria-label="Aumentar beats">＋</button>
-            </div>
-
-            <div class="accentLabel" style="margin-top:8px;">Unidad del Tiempo (Denominador)</div>
-            <div class="row">
-              <button id="denMinus" class="pill" aria-label="Disminuir denominador">−</button>
-              <span id="denValue" class="pill">4</span>
-              <button id="denPlus" class="pill" aria-label="Aumentar denominador">＋</button>
-            </div>
-          </div>
-
-          <!-- Accents -->
-          <div class="row" style="flex-direction:column;margin-top:6px;">
-            <div class="accentLabel">Acentos</div>
-            <div id="accents" class="accents" aria-label="Acentos del compás"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Footer links -->
-      <div class="linkbar">
-        <a href="https://www.instagram.com/frojax" target="_blank" rel="noopener">INSTAGRAM</a>
-        <a href="https://www.frojax.com/lecciones-y-clinicas" target="_blank" rel="noopener">LECCIONES Y CLÍNICAS</a>
-        <a href="https://www.frojax.com" target="_blank" rel="noopener">FROJAX.COM</a>
-      </div>
+      <button id="startStop" class="btn" aria-pressed="false">
+        ▶ Start
+      </button>
     </div>
+
+    <section id="trainerPanel" class="trainer-panel" aria-disabled="true">
+      <label>Start BPM <input id="trainerStartBpm" type="number" min="20" max="300" value="60" disabled></label>
+      <label>End BPM <input id="trainerEndBpm" type="number" min="20" max="300" value="100" disabled></label>
+      <label>Duration (min) <input id="trainerDurationMin" type="number" min="1" max="60" value="5" disabled></label>
+    </section>
+
+    <div id="status" class="status">Idle</div>
   </div>
-</div>
 
 <script>
-let audioCtx, masterGain;
-let nextNoteTime = 0.0;
-let currentBeat = 0;
-let lookahead = 25;
-let scheduleAheadTime = 0.10;
-let timerID;
-let isRunning = false;
+  // --- State ---
+  let isTrainerOn = false;
+  let isRunning = false;
+  let trainingTimer = null;
+  let currentBpm = 80;
 
-let bpm = 120;
-let tsNumerator = 4;
-let tsDenominator = 4;
-let accents = [true, false, false, false];
-let trainerOn = false;
+  // --- Elements ---
+  const app = document.getElementById('app');
+  const trainerToggle = document.getElementById('trainerToggle');
+  const trainerPanel = document.getElementById('trainerPanel');
+  const startStopBtn = document.getElementById('startStop');
+  const statusEl = document.getElementById('status');
+  const startBpmInput = document.getElementById('trainerStartBpm');
+  const endBpmInput = document.getElementById('trainerEndBpm');
+  const durMinInput = document.getElementById('trainerDurationMin');
 
-const bpmSlider = document.getElementById('bpm');
-const bpmValue  = document.getElementById('bpmValue');
-const startStop = document.getElementById('startStop');
-const trainerToggle = document.getElementById('trainerToggle');
-const trainerPanel  = document.getElementById('trainerPanel');
-const volumeSlider = document.getElementById('volume');
+  // --- Placeholder sound (simple click) ---
+  let clickInterval;
 
-const beatsMinus = document.getElementById('beatsMinus');
-const beatsPlus  = document.getElementById('beatsPlus');
-const beatsCount = document.getElementById('beatsCount');
-
-const denMinus = document.getElementById('denMinus');
-const denPlus  = document.getElementById('denPlus');
-const denValue = document.getElementById('denValue');
-const tsInline = document.getElementById('tsInline');
-const accentsWrap= document.getElementById('accents');
-
-const startBpmEl  = document.getElementById('startBpm');
-const endBpmEl    = document.getElementById('endBpm');
-const durationMinEl  = document.getElementById('durationMin');
-
-const soundTypeSel = document.getElementById('soundType');
-const screenFlash = document.getElementById('screenFlash');
-const pulse = document.getElementById('pulse');
-const pulseRing = document.getElementById('pulseRing');
-
-function initAudio(){
-  if(!audioCtx){
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    masterGain = audioCtx.createGain();
-    masterGain.gain.value = (Number(volumeSlider.value)||85) / 100;
-    masterGain.connect(audioCtx.destination);
+  function playClick(bpm) {
+    clearInterval(clickInterval);
+    const interval = 60000 / bpm;
+    clickInterval = setInterval(() => {
+      const osc = new AudioContext();
+      const beep = osc.createOscillator();
+      beep.connect(osc.destination);
+      beep.start();
+      beep.stop(osc.currentTime + 0.05);
+    }, interval);
   }
-}
 
-function updateShortcutStates(){
-  const val = Number(bpm);
-  document.querySelectorAll('.pillCircle').forEach(btn=>{
-    const target = Number(btn.getAttribute('data-bpm'));
-    btn.classList.toggle('active', target === val);
+  function stopClick() {
+    clearInterval(clickInterval);
+  }
+
+  function metronomeStart(bpm) {
+    playClick(bpm);
+    statusEl.textContent = `Running @ ${bpm} BPM`;
+  }
+
+  function metronomeStop() {
+    stopClick();
+    statusEl.textContent = 'Stopped';
+  }
+
+  function setBpm(bpm) {
+    playClick(bpm);
+  }
+
+  // --- Trainer toggle ---
+  trainerToggle.addEventListener('click', () => {
+    isTrainerOn = !isTrainerOn;
+    trainerToggle.setAttribute('aria-pressed', String(isTrainerOn));
+    trainerToggle.textContent = isTrainerOn ? '🏋️ Trainer: ON' : '🏋️ Trainer: OFF';
+    app.classList.toggle('trainer-on', isTrainerOn);
+
+    const disabled = !isTrainerOn;
+    trainerPanel.setAttribute('aria-disabled', String(disabled));
+    startBpmInput.disabled = disabled;
+    endBpmInput.disabled = disabled;
+    durMinInput.disabled = disabled;
+
+    statusEl.textContent = isTrainerOn ? 'Trainer enabled. Configure your ramp.' : 'Trainer disabled.';
   });
-}
 
-function setBpm(val){
-  bpm = Math.max(30, Math.min(240, Math.round(val)));
-  bpmSlider.value = bpm;
-  bpmValue.textContent = bpm;
-  updateShortcutStates();
-}
+  // --- Start/Stop ---
+  startStopBtn.addEventListener('click', () => {
+    if (!isRunning) {
+      isRunning = true;
+      startStopBtn.textContent = '■ Stop';
+      startStopBtn.setAttribute('aria-pressed', 'true');
 
-function renderAccents(){
-  accentsWrap.innerHTML = "";
-  for(let i=0;i<tsNumerator;i++){
-    const b = document.createElement('button');
-    b.className = 'accentBtn' + (accents[i] ? ' on' : '');
-    b.textContent = (i+1);
-    b.setAttribute('aria-pressed', accents[i] ? 'true':'false');
-    b.addEventListener('click', ()=>{
-      accents[i] = !accents[i];
-      renderAccents();
-    });
-    accentsWrap.appendChild(b);
-  }
-  beatsCount.textContent = String(tsNumerator);
-  denValue.textContent = String(tsDenominator);
-  const tsText = tsNumerator + "/" + tsDenominator;
-  tsInline.textContent = tsText;
-}
-
-function setNumerator(n){
-  tsNumerator = Math.max(1, Math.min(12, n));
-  const next = new Array(tsNumerator).fill(false);
-  for(let i=0;i<Math.min(accents.length, tsNumerator); i++){
-    next[i] = accents[i];
-  }
-  if(!next.some(Boolean)) next[0] = true;
-  accents = next;
-  currentBeat = 0;
-  renderAccents();
-}
-
-function setDenominator(d){
-  const steps = [1,2,4,8,16];
-  if(!steps.includes(d)){
-    d = steps.reduce((prev,curr)=> Math.abs(curr-d)<Math.abs(prev-d)?curr:prev, 4);
-  }
-  tsDenominator = d;
-  renderAccents();
-}
-
-function secondsPerBeat(){
-  return (60.0 / bpm) * (4.0 / tsDenominator);
-}
-
-function playClick(time, isAccent){
-  const type = soundTypeSel.value;
-  let dur = 0.05;
-
-  if(type === 'cowbell'){
-    let osc1 = audioCtx.createOscillator();
-    let osc2 = audioCtx.createOscillator();
-    let mix = audioCtx.createGain();
-    let gain = audioCtx.createGain();
-
-    const f1 = isAccent ? 880 : 780;
-    const f2 = isAccent ? 540 : 480;
-    osc1.type = 'square';   osc1.frequency.setValueAtTime(f1, time);
-    osc2.type = 'triangle'; osc2.frequency.setValueAtTime(f2, time);
-
-    gain.gain.setValueAtTime(0.001, time);
-    gain.gain.exponentialRampToValueAtTime(isAccent?0.9:0.6, time + 0.003);
-    gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.10);
-
-    osc1.connect(mix);
-    osc2.connect(mix);
-    mix.connect(gain).connect(masterGain);
-    osc1.start(time); osc2.start(time);
-    osc1.stop(time + 0.12); osc2.stop(time + 0.12);
-    return;
-  }
-
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  let freq = 1300;
-  let oscType = 'square';
-
-  if(type === 'click'){ freq = isAccent ? 2000 : 1300; oscType = 'square'; dur = 0.05; }
-  if(type === 'beep'){  freq = isAccent ? 1200 : 900;   oscType = 'sine';   dur = 0.06; }
-  if(type === 'tick'){  freq = isAccent ? 1600 : 1000;  oscType = 'square'; dur = 0.03; }
-
-  osc.type = oscType;
-  osc.frequency.setValueAtTime(freq, time);
-
-  gain.gain.setValueAtTime(0.001, time);
-  gain.gain.exponentialRampToValueAtTime(isAccent?0.9:0.6, time + 0.002);
-  gain.gain.exponentialRampToValueAtTime(0.0001, time + dur);
-
-  osc.connect(gain).connect(masterGain);
-  osc.start(time);
-  osc.stop(time + dur);
-}
-
-function visualFlash(isAccent){
-  pulse.classList.add('glow');
-  pulseRing.classList.remove('ringAnim'); void pulseRing.offsetWidth; pulseRing.classList.add('ringAnim');
-  screenFlash.classList.remove('show','showAccent'); void screenFlash.offsetWidth;
-  screenFlash.classList.add(isAccent ? 'showAccent' : 'show');
-  if (navigator.vibrate) { navigator.vibrate(isAccent ? 20 : 10); }
-  setTimeout(()=>{ pulse.classList.remove('glow'); }, 140);
-}
-
-function scheduleNote(beatNumber, time){
-  const isAccent = accents[beatNumber % tsNumerator] === true;
-  playClick(time, isAccent);
-  setTimeout(()=>{ visualFlash(isAccent); }, Math.max(0, (time - audioCtx.currentTime) * 1000));
-}
-
-function nextNote(){
-  nextNoteTime += secondsPerBeat();
-  currentBeat = (currentBeat + 1) % tsNumerator;
-}
-
-function scheduler(){
-  while (nextNoteTime < audioCtx.currentTime + scheduleAheadTime){
-    scheduleNote(currentBeat, nextNoteTime);
-    nextNote();
-  }
-  timerID = setTimeout(scheduler, lookahead);
-}
-
-function start(){
-  initAudio();
-  audioCtx.resume();
-  if(isRunning) return;
-  isRunning = true;
-  startStop.textContent = 'Detener';
-  nextNoteTime = audioCtx.currentTime + 0.05;
-  currentBeat = 0;
-  scheduler();
-}
-
-function stop(){
-  isRunning = false;
-  startStop.textContent = 'Iniciar';
-  clearTimeout(timerID);
-}
-
-bpmSlider.addEventListener('input', e => setBpm(e.target.value));
-
-document.querySelectorAll('.pillCircle').forEach(btn=>{
-  btn.addEventListener('click', ()=> setBpm(Number(btn.getAttribute('data-bpm'))));
-});
-updateShortcutStates();
-
-startStop.addEventListener('click', ()=> isRunning ? stop() : start());
-
-volumeSlider.addEventListener('input', e => {
-  initAudio();
-  masterGain.gain.value = (Number(e.target.value)||0) / 100;
-});
-
-beatsMinus.addEventListener('click', ()=> setNumerator(tsNumerator-1));
-beatsPlus .addEventListener('click', ()=> setNumerator(tsNumerator+1));
-
-denMinus.addEventListener('click', ()=> {
-  const steps = [1,2,4,8,16];
-  let idx = steps.indexOf(tsDenominator);
-  if(idx > 0) setDenominator(steps[idx-1]);
-});
-denPlus.addEventListener('click', ()=> {
-  const steps = [1,2,4,8,16];
-  let idx = steps.indexOf(tsDenominator);
-  if(idx < steps.length-1) setDenominator(steps[idx+1]);
-});
-
-trainerToggle.addEventListener('click', ()=>{
-  trainerOn = !trainerOn;
-  trainerToggle.textContent = trainerOn ? 'MODO ENTRENAMIENTO: ON' : 'MODO ENTRENAMIENTO: OFF';
-  trainerPanel.classList.toggle('show', trainerOn);
-});
-
-// Trainer ramp when ON + running
-function animate(){
-  if(trainerOn && isRunning && audioCtx){
-    const mins = Math.max(1, Math.min(60, Number(durationMinEl.value)||2));
-    const duration = mins * 60;
-    const t = Math.min(1, (audioCtx.currentTime - (window._trainerStartTS || (window._trainerStartTS = audioCtx.currentTime))) / duration);
-    const startB = Number(startBpmEl.value)||80;
-    const endB   = Number(endBpmEl.value)||140;
-    const cur = startB + (endB - startB) * t;
-    setBpm(cur);
-    if(t >= 1){
-      trainerOn = false;
-      trainerToggle.textContent = 'MODO ENTRENAMIENTO: OFF';
-      trainerPanel.classList.remove('show');
-      window._trainerStartTS = null;
+      if (isTrainerOn) {
+        startTrainingRun();
+      } else {
+        metronomeStart(currentBpm);
+      }
+    } else {
+      stopAll();
     }
-  } else {
-    window._trainerStartTS = null;
+  });
+
+  function stopAll() {
+    isRunning = false;
+    startStopBtn.textContent = '▶ Start';
+    startStopBtn.setAttribute('aria-pressed', 'false');
+    clearTrainingTimer();
+    metronomeStop();
   }
-  requestAnimationFrame(animate);
-}
-requestAnimationFrame(animate);
 
-// Initialize
-setBpm(120);
-setNumerator(4);
-setDenominator(4);
+  // --- Training ramp ---
+  function startTrainingRun() {
+    const startBpm = clamp(+startBpmInput.value || 60, 20, 300);
+    const endBpm = clamp(+endBpmInput.value || 100, 20, 300);
+    const minutes = Math.max(1, +durMinInput.value || 5);
 
-// Unlock audio on first gesture
-['touchstart','touchend','mousedown','keydown'].forEach(evt=>{
-  window.addEventListener(evt, ()=>{
-    if(audioCtx && audioCtx.state === 'suspended'){ audioCtx.resume(); }
-  }, {passive:true});
-});
+    metronomeStart(startBpm);
+    const totalMs = minutes * 60 * 1000;
+    const t0 = performance.now();
+
+    clearTrainingTimer();
+
+    trainingTimer = requestAnimationFrame(function step(now) {
+      if (!isRunning) return;
+      const elapsed = now - t0;
+      const p = Math.min(1, elapsed / totalMs);
+      const bpm = Math.round(lerp(startBpm, endBpm, p));
+
+      if (bpm !== currentBpm) {
+        setBpm(bpm);
+        currentBpm = bpm;
+        statusEl.textContent = `Training: ${bpm} BPM (${startBpm}→${endBpm})`;
+      }
+
+      if (p < 1) {
+        trainingTimer = requestAnimationFrame(step);
+      } else {
+        statusEl.textContent = `Training done @ ${endBpm} BPM`;
+        isRunning = false;
+        startStopBtn.textContent = '▶ Start';
+      }
+    });
+  }
+
+  function clearTrainingTimer() {
+    if (trainingTimer) {
+      cancelAnimationFrame(trainingTimer);
+      trainingTimer = null;
+    }
+  }
+
+  // --- Helpers ---
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function clamp(v, mn, mx) { return Math.min(mx, Math.max(mn, v)); }
 </script>
 </body>
 </html>
