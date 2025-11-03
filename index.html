@@ -1,191 +1,206 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FROJAX FREE CLICK</title>
 <style>
+  :root {
+    --gold: #ffd700;
+    --dark: #000;
+    --gray: #1a1a1a;
+  }
+
   body {
     margin: 0;
-    background: #000;
+    padding: 0;
+    background: var(--dark);
     color: #fff;
     font-family: Arial, sans-serif;
-    text-align: center;
-  }
-
-  .app {
-    height: 100vh;
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
-    transition: background 0.3s ease;
+    justify-content: center;
+    height: 100vh;
+    overflow: hidden;
   }
 
-  .app.trainer-on {
-    background: radial-gradient(circle at center, #222 0%, #000 100%);
-  }
-
-  .brand {
-    font-size: 22px;
-    font-weight: 900;
-    color: gold;
-    margin-bottom: 30px;
+  h1 {
     text-transform: uppercase;
+    color: var(--gold);
+    font-size: 26px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    margin-bottom: 25px;
   }
 
   .controls {
     display: flex;
     flex-direction: column;
+    align-items: center;
     gap: 10px;
   }
 
-  .btn {
-    background: #222;
+  button {
+    background: var(--gray);
+    border: 2px solid var(--gold);
     color: #fff;
-    border: 2px solid gold;
-    border-radius: 12px;
     font-size: 18px;
-    padding: 12px 24px;
+    padding: 10px 24px;
+    border-radius: 10px;
     cursor: pointer;
     transition: all 0.2s;
   }
 
-  .btn:hover {
-    background: gold;
-    color: black;
+  button:hover {
+    background: var(--gold);
+    color: #000;
   }
 
-  .trainer-panel {
-    margin-top: 20px;
+  .panel {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    align-items: center;
+    margin-top: 20px;
+    gap: 10px;
   }
 
-  .trainer-panel label {
+  .panel label {
     font-size: 16px;
   }
 
-  .trainer-panel input {
-    width: 80px;
+  .panel input {
+    width: 70px;
     text-align: center;
-    margin-left: 8px;
+    margin-left: 6px;
   }
 
-  .trainer-panel[aria-disabled="true"] {
+  .panel[aria-disabled="true"] {
     opacity: 0.4;
     pointer-events: none;
   }
 
-  .status {
-    margin-top: 20px;
+  #flash {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: #222;
+    margin-top: 30px;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0);
+    transition: box-shadow 0.05s ease;
+  }
+
+  .trainer-on {
+    background: radial-gradient(circle at center, #111 0%, #000 100%);
+  }
+
+  #status {
+    margin-top: 25px;
     font-size: 16px;
     opacity: 0.8;
   }
 </style>
 </head>
-
 <body>
-  <div id="app" class="app">
-    <header class="brand">FROJAX FREE CLICK</header>
 
-    <div class="controls">
-      <button id="trainerToggle" class="btn" aria-pressed="false" title="Toggle Trainer Mode">
-        🏋️ Trainer: OFF
-      </button>
+  <h1>FROJAX FREE CLICK</h1>
 
-      <button id="startStop" class="btn" aria-pressed="false">
-        ▶ Start
-      </button>
-    </div>
-
-    <section id="trainerPanel" class="trainer-panel" aria-disabled="true">
-      <label>Start BPM <input id="trainerStartBpm" type="number" min="20" max="300" value="60" disabled></label>
-      <label>End BPM <input id="trainerEndBpm" type="number" min="20" max="300" value="100" disabled></label>
-      <label>Duration (min) <input id="trainerDurationMin" type="number" min="1" max="60" value="5" disabled></label>
-    </section>
-
-    <div id="status" class="status">Idle</div>
+  <div class="controls">
+    <button id="trainerToggle">🏋️ Trainer: OFF</button>
+    <button id="startStop">▶ Start</button>
   </div>
 
+  <div id="trainerPanel" class="panel" aria-disabled="true">
+    <label>Start BPM <input id="trainerStartBpm" type="number" min="20" max="300" value="60" disabled></label>
+    <label>End BPM <input id="trainerEndBpm" type="number" min="20" max="300" value="100" disabled></label>
+    <label>Duración (min) <input id="trainerDurationMin" type="number" min="1" max="60" value="5" disabled></label>
+  </div>
+
+  <div id="flash"></div>
+  <div id="status">Listo</div>
+
 <script>
-  // --- State ---
+  // --- STATE ---
   let isTrainerOn = false;
   let isRunning = false;
-  let trainingTimer = null;
   let currentBpm = 80;
+  let clickInterval = null;
+  let trainerTimer = null;
 
-  // --- Elements ---
-  const app = document.getElementById('app');
-  const trainerToggle = document.getElementById('trainerToggle');
+  // --- ELEMENTS ---
+  const trainerBtn = document.getElementById('trainerToggle');
+  const startBtn = document.getElementById('startStop');
   const trainerPanel = document.getElementById('trainerPanel');
-  const startStopBtn = document.getElementById('startStop');
-  const statusEl = document.getElementById('status');
   const startBpmInput = document.getElementById('trainerStartBpm');
   const endBpmInput = document.getElementById('trainerEndBpm');
-  const durMinInput = document.getElementById('trainerDurationMin');
+  const durationInput = document.getElementById('trainerDurationMin');
+  const statusEl = document.getElementById('status');
+  const flash = document.getElementById('flash');
+  const body = document.body;
 
-  // --- Placeholder sound (simple click) ---
-  let clickInterval;
+  // --- SIMPLE CLICK SOUND ---
+  function playClickSound(accent = false) {
+    const ctx = new AudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.value = accent ? 1200 : 900;
+    gain.gain.value = 0.2;
+    osc.start();
+    osc.stop(ctx.currentTime + 0.05);
+  }
 
-  function playClick(bpm) {
+  // --- VISUAL FLASH ---
+  function flashPulse(accent = false) {
+    flash.style.boxShadow = accent
+      ? '0 0 20px rgba(255,215,0,1)'
+      : '0 0 10px rgba(255,215,0,0.7)';
+    setTimeout(() => (flash.style.boxShadow = '0 0 0 rgba(255,215,0,0)'), 100);
+  }
+
+  // --- START/STOP BASE ---
+  function startMetronome(bpm) {
     clearInterval(clickInterval);
     const interval = 60000 / bpm;
+    let count = 0;
     clickInterval = setInterval(() => {
-      const osc = new AudioContext();
-      const beep = osc.createOscillator();
-      beep.connect(osc.destination);
-      beep.start();
-      beep.stop(osc.currentTime + 0.05);
+      const accent = count % 4 === 0;
+      playClickSound(accent);
+      flashPulse(accent);
+      count++;
     }, interval);
   }
 
-  function stopClick() {
+  function stopMetronome() {
     clearInterval(clickInterval);
+    clickInterval = null;
   }
 
-  function metronomeStart(bpm) {
-    playClick(bpm);
-    statusEl.textContent = `Running @ ${bpm} BPM`;
-  }
-
-  function metronomeStop() {
-    stopClick();
-    statusEl.textContent = 'Stopped';
-  }
-
-  function setBpm(bpm) {
-    playClick(bpm);
-  }
-
-  // --- Trainer toggle ---
-  trainerToggle.addEventListener('click', () => {
+  // --- TRAINER MODE TOGGLE ---
+  trainerBtn.addEventListener('click', () => {
     isTrainerOn = !isTrainerOn;
-    trainerToggle.setAttribute('aria-pressed', String(isTrainerOn));
-    trainerToggle.textContent = isTrainerOn ? '🏋️ Trainer: ON' : '🏋️ Trainer: OFF';
-    app.classList.toggle('trainer-on', isTrainerOn);
-
-    const disabled = !isTrainerOn;
-    trainerPanel.setAttribute('aria-disabled', String(disabled));
-    startBpmInput.disabled = disabled;
-    endBpmInput.disabled = disabled;
-    durMinInput.disabled = disabled;
-
-    statusEl.textContent = isTrainerOn ? 'Trainer enabled. Configure your ramp.' : 'Trainer disabled.';
+    trainerBtn.textContent = isTrainerOn ? '🏋️ Trainer: ON' : '🏋️ Trainer: OFF';
+    trainerPanel.setAttribute('aria-disabled', String(!isTrainerOn));
+    startBpmInput.disabled = !isTrainerOn;
+    endBpmInput.disabled = !isTrainerOn;
+    durationInput.disabled = !isTrainerOn;
+    body.classList.toggle('trainer-on', isTrainerOn);
+    statusEl.textContent = isTrainerOn
+      ? 'Modo entrenamiento activado.'
+      : 'Modo normal.';
   });
 
-  // --- Start/Stop ---
-  startStopBtn.addEventListener('click', () => {
+  // --- START/STOP BUTTON ---
+  startBtn.addEventListener('click', () => {
     if (!isRunning) {
       isRunning = true;
-      startStopBtn.textContent = '■ Stop';
-      startStopBtn.setAttribute('aria-pressed', 'true');
-
+      startBtn.textContent = '■ Stop';
       if (isTrainerOn) {
-        startTrainingRun();
+        startTrainer();
       } else {
-        metronomeStart(currentBpm);
+        startMetronome(currentBpm);
+        statusEl.textContent = `Corriendo a ${currentBpm} BPM`;
       }
     } else {
       stopAll();
@@ -194,56 +209,47 @@
 
   function stopAll() {
     isRunning = false;
-    startStopBtn.textContent = '▶ Start';
-    startStopBtn.setAttribute('aria-pressed', 'false');
-    clearTrainingTimer();
-    metronomeStop();
+    startBtn.textContent = '▶ Start';
+    stopMetronome();
+    clearTimeout(trainerTimer);
+    trainerTimer = null;
+    statusEl.textContent = 'Detenido';
   }
 
-  // --- Training ramp ---
-  function startTrainingRun() {
-    const startBpm = clamp(+startBpmInput.value || 60, 20, 300);
-    const endBpm = clamp(+endBpmInput.value || 100, 20, 300);
-    const minutes = Math.max(1, +durMinInput.value || 5);
-
-    metronomeStart(startBpm);
-    const totalMs = minutes * 60 * 1000;
+  // --- TRAINER FUNCTION ---
+  function startTrainer() {
+    const startBpm = parseInt(startBpmInput.value) || 60;
+    const endBpm = parseInt(endBpmInput.value) || 100;
+    const duration = parseInt(durationInput.value) || 5;
+    const totalMs = duration * 60 * 1000;
     const t0 = performance.now();
 
-    clearTrainingTimer();
+    statusEl.textContent = `Entrenando: ${startBpm} → ${endBpm} BPM (${duration} min)`;
+    startMetronome(startBpm);
 
-    trainingTimer = requestAnimationFrame(function step(now) {
+    function ramp(now) {
       if (!isRunning) return;
       const elapsed = now - t0;
-      const p = Math.min(1, elapsed / totalMs);
-      const bpm = Math.round(lerp(startBpm, endBpm, p));
+      const progress = Math.min(1, elapsed / totalMs);
+      const bpm = Math.round(startBpm + (endBpm - startBpm) * progress);
 
       if (bpm !== currentBpm) {
-        setBpm(bpm);
         currentBpm = bpm;
-        statusEl.textContent = `Training: ${bpm} BPM (${startBpm}→${endBpm})`;
+        startMetronome(bpm);
+        statusEl.textContent = `Entrenando: ${bpm} BPM`;
       }
 
-      if (p < 1) {
-        trainingTimer = requestAnimationFrame(step);
+      if (progress < 1) {
+        trainerTimer = requestAnimationFrame(ramp);
       } else {
-        statusEl.textContent = `Training done @ ${endBpm} BPM`;
+        statusEl.textContent = `Entrenamiento completado a ${endBpm} BPM`;
         isRunning = false;
-        startStopBtn.textContent = '▶ Start';
+        startBtn.textContent = '▶ Start';
       }
-    });
-  }
-
-  function clearTrainingTimer() {
-    if (trainingTimer) {
-      cancelAnimationFrame(trainingTimer);
-      trainingTimer = null;
     }
-  }
 
-  // --- Helpers ---
-  function lerp(a, b, t) { return a + (b - a) * t; }
-  function clamp(v, mn, mx) { return Math.min(mx, Math.max(mn, v)); }
+    trainerTimer = requestAnimationFrame(ramp);
+  }
 </script>
 </body>
 </html>
